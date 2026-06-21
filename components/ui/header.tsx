@@ -10,9 +10,18 @@ import { supabase } from '@/lib/supabaseClient';
  */
 export default function Header() {
   const { theme, setTheme } = useTheme();
-  const toggleTheme = () => setTheme(theme === "dark" ? "light" : "dark");
-
+  const [mounted, setMounted] = useState(false);
   const [role, setRole] = useState<string | null>(null);
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setMounted(true);
+  }, []);
+
+  const toggleTheme = () => {
+    if (!mounted) return;
+    setTheme(theme === "dark" ? "light" : "dark");
+  };
 
   useEffect(() => {
     const fetchRole = async () => {
@@ -52,7 +61,7 @@ export default function Header() {
           </Link>
         )}
         <Button variant="secondary" onClick={toggleTheme} className="flex items-center gap-1">
-          {theme === "dark" ? "Light" : "Dark"} Mode
+          {mounted && theme === "dark" ? "Light" : "Dark"} Mode
         </Button>
       </nav>
     </header>
