@@ -1,9 +1,10 @@
+"use client";
 import { supabase } from '@/lib/supabaseClient';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'react-hot-toast';
-import Button from '@/components/ui/button';
-import Skeleton from '@/components/ui/skeleton';
+import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
 
 interface TutorProfile {
   user_id: string;
@@ -36,13 +37,26 @@ export default function AdminVerification() {
       }
       const { data, error } = await supabase
         .from('tutor_profiles')
-        .select('user_id, name, intro_video_url, verification_status')
+        .select(`
+          user_id,
+          intro_video_url,
+          verification_status,
+          users (
+            full_name
+          )
+        `)
         .eq('verification_status', 'pending');
       if (error) {
         toast.error('Failed to load pending tutors');
         return;
       }
-      setPendingTutors(data);
+      const formatted = (data as any[]).map(tutor => ({
+        user_id: tutor.user_id,
+        name: tutor.users?.full_name || 'Anonymous',
+        intro_video_url: tutor.intro_video_url,
+        verification_status: tutor.verification_status,
+      }));
+      setPendingTutors(formatted);
     };
     fetchPending();
   }, []);

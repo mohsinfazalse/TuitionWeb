@@ -1,9 +1,11 @@
-import { supabase } from '@/lib/supabaseClient';
+"use client";
+
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'react-hot-toast';
-import Button from '@/components/ui/button';
-import Skeleton from '@/components/ui/skeleton';
+import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
+import { supabase } from '@/lib/supabaseClient';
 
 interface DashboardStats {
   totalUsers: number;

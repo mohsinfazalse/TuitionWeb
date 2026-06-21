@@ -1,5 +1,5 @@
 import { supabase } from '@/lib/supabaseClient';
-import TutorCard from '@/components/ui/tutorCard';
+import { TutorCard } from '@/components/ui/tutorCard';
 import { Skeleton } from '@/components/ui/skeleton';
 
 // Force server‑side rendering for SEO
@@ -7,9 +7,17 @@ export const dynamic = 'force-dynamic';
 
 export default async function TutorsPage() {
   // Fetch only verified tutors
-  const { data: tutors, error } = await supabase
+  const { data: rawTutors, error } = await supabase
     .from('tutor_profiles')
-    .select('id, full_name as name, profile_picture as avatar_url, hourly_rate, avg_rating')
+    .select(`
+      user_id,
+      hourly_rate,
+      avg_rating,
+      users (
+        full_name,
+        profile_picture_url
+      )
+    `)
     .eq('verification_status', 'approved');
 
   if (error) {
@@ -20,13 +28,21 @@ export default async function TutorsPage() {
     );
   }
 
-  if (!tutors || tutors.length === 0) {
+  if (!rawTutors || rawTutors.length === 0) {
     return (
       <div className="p-8 text-center text-gray-600">
         No tutors available at the moment.
       </div>
     );
   }
+
+  const tutors = (rawTutors as any[]).map((tutor) => ({
+    id: tutor.user_id,
+    name: tutor.users?.full_name || 'Anonymous',
+    avatar_url: tutor.users?.profile_picture_url || undefined,
+    hourly_rate: Number(tutor.hourly_rate),
+    avg_rating: tutor.avg_rating ? Number(tutor.avg_rating) : undefined,
+  }));
 
   return (
     <div className="container mx-auto py-12 px-4">

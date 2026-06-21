@@ -1,3 +1,4 @@
+"use client";
 import { useState } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import { useRouter } from 'next/navigation';
@@ -20,7 +21,7 @@ const tutorSchema = z.object({
   password: z.string().min(6),
   name: z.string().min(2),
   hourlyRate: z.coerce.number().min(5),
-  // video upload will be handled later
+  introVideo: z.any().optional(),
 });
 
 type StudentForm = z.infer<typeof studentSchema>;
@@ -81,20 +82,38 @@ export default function SignUpPage() {
       introVideoUrl = publicUrlData?.publicUrl || null;
     }
 
+    // Insert into public.users table to satisfy foreign key references
+    const { error: userErr } = await supabase.from('users').insert({
+      id: userId,
+      email: data.email,
+      role: role,
+      full_name: data.name,
+    });
+    if (userErr) {
+      toast.error('Failed to create user profile: ' + userErr.message);
+      return;
+    }
+
     // Insert profile row based on role
     if (role === 'student') {
-      await supabase.from('student_profiles').insert({
+      const { error: profileErr } = await supabase.from('student_profiles').insert({
         user_id: userId,
-        name: data.name,
       });
+      if (profileErr) {
+        toast.error('Failed to create student profile: ' + profileErr.message);
+        return;
+      }
     } else {
-      await supabase.from('tutor_profiles').insert({
+      const { error: profileErr } = await supabase.from('tutor_profiles').insert({
         user_id: userId,
-        name: data.name,
         hourly_rate: data.hourlyRate,
         intro_video_url: introVideoUrl,
         verification_status: 'pending',
       });
+      if (profileErr) {
+        toast.error('Failed to create tutor profile: ' + profileErr.message);
+        return;
+      }
     }
     toast.success('Account created! Please check your email to confirm.');
     router.push('/');
@@ -142,7 +161,7 @@ export default function SignUpPage() {
               type="number"
               placeholder="Hourly Rate (USD)"
               {...register('hourlyRate')}
-              error={errors.hourlyRate?.message?.toString()}
+              error={(errors as any).hourlyRate?.message?.toString()}
             />
             <p className="text-sm text-gray-500 mb-2">
               Please upload a short introductory video (max 2 minutes, approx 50 MB).
