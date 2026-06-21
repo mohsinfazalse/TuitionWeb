@@ -21,7 +21,7 @@ export default function StudentDashboard() {
     const fetchRequests = async () => {
       const { data: user } = await supabase.auth.getUser();
       if (!user?.user) {
-        router.push('/auth/login');
+        router.push('/login');
         return;
       }
       const { data, error } = await supabase

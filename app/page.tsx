@@ -12,7 +12,7 @@ export default function LandingPage() {
         <p className="text-lg mb-6">
           Connect with expert tutors, schedule sessions, and track progress—all in one premium platform.
         </p>
-        <Link href="/auth/signup">
+        <Link href="/signup">
           <Button variant="primary" className="px-8 py-3 text-lg">
             Get Started
           </Button>

@@ -21,7 +21,7 @@ export default function AdminVerification() {
     const fetchPending = async () => {
       const { data: user } = await supabase.auth.getUser();
       if (!user?.user) {
-        router.push('/auth/login');
+        router.push('/login');
         return;
       }
       // Ensure user is admin

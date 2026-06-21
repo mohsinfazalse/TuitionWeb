@@ -21,7 +21,7 @@ export default function AdminDashboard() {
     const fetchStats = async () => {
       const { data: user } = await supabase.auth.getUser();
       if (!user?.user) {
-        router.push('/auth/login');
+        router.push('/login');
         return;
       }
       // Ensure admin role
